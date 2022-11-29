@@ -1,4 +1,4 @@
-import logo from '../../logo.svg';
+import logo from './image/logo.svg';
 import './Home.css';
 
 function Home()
