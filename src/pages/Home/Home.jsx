@@ -12,11 +12,10 @@ function Home()
                 </p>
                 <a
                     className="App-link"
-                    href="https://reactjs.org"
-                    target="_blank"
+                    href="/user"
                     rel="noopener noreferrer"
                 >
-                    Learn React
+                    Sign in or Sign up
                 </a>
             </header>
         </div>

@@ -1,14 +1,10 @@
 import "./style.css";
 import {useEffect, useState} from "react";
 import effect from "./effect";
+import {Link} from "react-router-dom";
 
-function Login()
+function Login(props)
 {
-    const[display, setDisplay] = useState("none");
-    const[state, setState] = useState("Sign in");
-    const[changestate, setChangestate] = useState("Sign up");
-    const[messages, setMessages] = useState("");
-
     const [inputs, setInputs] = useState({});
 
     const handleChange = (event) => {
@@ -21,81 +17,75 @@ function Login()
         effect();
     }, []);
 
-    const handleClick = (event) => {
-        if(state === "Sign up")
+    async function handleFetch()
+    {
+        let res = await fetch('http://localhost:5000/api/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(inputs)
+        }).then(res => res.json());
+        return (res);
+    }
+
+    const handleSubmit = (event) => {
+        if (inputs.confirmPassword !== inputs.password)
         {
-            setDisplay("none");
-            setState("Sign in");
-            setChangestate("Sign up");
-        }
-        else
-        {
-            setDisplay("");
-            setState("Sign up");
-            setChangestate("Sign in");
+            const registerData = handleFetch();
+            if(registerData.status === "success")
+            {
+                props.history.push('/login');
+                console.log(registerData);
+            }
         }
     }
 
-    const handleSubmit = (event) =>
-    {
-        if(inputs.confirmPassword !== inputs.password)
-        {
-            setMessages("Passwords do not match");
-        }
-    }
-    return(
-        <div>
-            <img className="wave" src="/images/wave.png" alt=""/>
-            <div className="container">
-                <div className="img"></div>
-                <div className="login-content">
-                    <form onSubmit={handleSubmit}>
-                        <embed type="" src="/images/kylin.svg"/>
-                        <h2 className="title">Welcome</h2>
-                        <div className="input-div one">
-                            <div className="i">
-                                <i className="fas fa-user"></i>
-                            </div>
-                            <div className="div">
-                                <h5>Username</h5>
-                                <input autoComplete="false" type="text" className="input" name="username" value={inputs.username || ""} onChange={handleChange}/>
-                            </div>
-                        </div>
-                        <div className="input-div one" style={{display:display}}>
-                            <div className="i">
-                                <i className="fa-regular fa-envelope"></i>
-                            </div>
-                            <div className="div">
-                                <h5>Email</h5>
-                                <input autoComplete="false" type="text" className="input" name="email" value={inputs.email || ""} onChange={handleChange}/>
-                            </div>
-                        </div>
-                        <div className="input-div pass">
-                            <div className="i">
-                                <i className="fas fa-lock"></i>
-                            </div>
-                            <div className="div">
-                                <h5>Password</h5>
-                                <input autoComplete="true" type="password" className="input" name="password" value={inputs.password || ""} onChange={handleChange}/>
-                            </div>
-                        </div>
-                        <div className="input-div pass" style={{display:display}}>
-                            <div className="i">
-                                <i className="fas fa-lock"></i>
-                            </div>
-                            <div className="div">
-                                <h5>Re-Enter Password</h5>
-                                <input autoComplete="false" type="password" className="input" name="confirmPassword" value={inputs.confirmPassword || ""} onChange={handleChange}/>
-                            </div>
-                        </div>
-                        <a >Forgot Password?</a>
-                        <a href="#" onClick={handleClick}>{changestate}</a>
-                        <input type="submit" className="btn" value={state}/>
-                        <p className="messages">{messages}</p>
-                    </form>
+    return (
+        <form onSubmit={handleSubmit}>
+            <embed type="" src="/images/kylin.svg"/>
+            <h2 className="title">Welcome</h2>
+            <div className="input-div one">
+                <div className="i">
+                    <i className="fas fa-user"></i>
+                </div>
+                <div className="div">
+                    <h5>Username</h5>
+                    <input autoComplete="false" type="text" className="input" name="username" value={inputs.username || ""} onChange={handleChange}/>
                 </div>
             </div>
-        </div>
+            <div className="input-div one">
+                <div className="i">
+                    <i className="fa-regular fa-envelope"></i>
+                </div>
+                <div className="div">
+                    <h5>Email</h5>
+                    <input autoComplete="false" type="text" className="input" name="email" value={inputs.email || ""} onChange={handleChange}/>
+                </div>
+            </div>
+            <div className="input-div pass">
+                <div className="i">
+                    <i className="fas fa-lock"></i>
+                </div>
+                <div className="div">
+                    <h5>Password</h5>
+                    <input autoComplete="true" type="password" className="input" name="password" value={inputs.password || ""} onChange={handleChange}/>
+                </div>
+            </div>
+            <div className="input-div pass">
+                <div className="i">
+                    <i className="fas fa-lock"></i>
+                </div>
+                <div className="div">
+                    <h5>Re-Enter Password</h5>
+                    <input autoComplete="false" type="password" className="input" name="confirmPassword" value={inputs.confirmPassword || ""} onChange={handleChange}/>
+                </div>
+            </div>
+            <Link to={"/login"}>Already have an account?</Link>
+            <a href="#" onClick={() => props.onFormSwitch("login")}>Sign in</a>
+            <input type="submit" className="btn" value="Sign up"/>
+            <p className="messages"></p>
+        </form>
     );
 }
 
