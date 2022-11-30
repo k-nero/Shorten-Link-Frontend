@@ -3,8 +3,8 @@ import Home from "./pages/Home/Home";
 import React, {useState} from "react";
 import Login from "./pages/User/Login";
 import Register from "./pages/User/Register";
-function App() {
-
+function App()
+{
   return (
       <BrowserRouter>
         <Routes>
@@ -16,7 +16,8 @@ function App() {
   );
 }
 
-function Form() {
+function Form(props)
+{
     const [currentForm, setCurrentForm] = useState('login');
     const toggleForm = (formName) => {
         setCurrentForm(formName);
@@ -30,7 +31,7 @@ function Form() {
                <div className="login-content">
          <div>
              {
-                 currentForm === 'login' ? <Login onFormSwitch={toggleForm} /> : <Register onFormSwitch={toggleForm} />
+                 currentForm === (props || 'login') ? <Login onFormSwitch={toggleForm} /> : <Register onFormSwitch={toggleForm} />
              }
          </div>
                </div>

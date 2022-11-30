@@ -2,10 +2,59 @@ import "./style.css";
 import {useEffect, useState} from "react";
 import effect from "./effect";
 import {Link} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 
 function Login(props)
 {
-    const [inputs, setInputs] = useState({});
+    let navigate = useNavigate();
+
+    useEffect(() => {
+        effect();
+    }, []);
+
+    const [inputs, setInputs] = useState({
+        confirmPassword: null,
+        email: null,
+        password: null,
+        username: null,
+        phone: null
+    });
+    const[loading, setLoading] = useState(false);
+    const[error, setError] = useState(null);
+
+    const handleSubmit = () => {
+
+        if (inputs.confirmPassword === inputs.password)
+        {
+            async function handleFetch()
+            {
+                setLoading(true);
+                await fetch('http://localhost:5000/api/users/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(inputs)
+                }).then(res => res.json()).then(data => {
+                    setLoading(false);
+                    if(data.status === "success")
+                    {
+                        return navigate('/user', {replace: true});
+                    }
+                    else
+                    {
+                        setError(data.message);
+                    }
+                });
+            }
+            handleFetch().then(() => {
+            });
+        }
+        else
+        {
+            setError("Passwords do not match");
+        }
+    }
 
     const handleChange = (event) => {
         const name = event.target.name;
@@ -13,32 +62,10 @@ function Login(props)
         setInputs(values => ({...values, [name]: value}))
     }
 
-    useEffect(() => {
-        effect();
-    }, []);
 
-    async function handleFetch()
+    if (loading)
     {
-        let res = await fetch('http://localhost:5000/api/register', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(inputs)
-        }).then(res => res.json());
-        return (res);
-    }
-
-    const handleSubmit = (event) => {
-        if (inputs.confirmPassword !== inputs.password)
-        {
-            const registerData = handleFetch();
-            if(registerData.status === "success")
-            {
-                props.history.push('/login');
-                console.log(registerData);
-            }
-        }
+        return <div>Loading...</div>
     }
 
     return (
@@ -51,7 +78,7 @@ function Login(props)
                 </div>
                 <div className="div">
                     <h5>Username</h5>
-                    <input autoComplete="false" type="text" className="input" name="username" value={inputs.username || ""} onChange={handleChange}/>
+                    <input autoComplete="false" type="text" className="input" name="username" value={inputs.username} onChange={handleChange}/>
                 </div>
             </div>
             <div className="input-div one">
@@ -60,7 +87,16 @@ function Login(props)
                 </div>
                 <div className="div">
                     <h5>Email</h5>
-                    <input autoComplete="false" type="text" className="input" name="email" value={inputs.email || ""} onChange={handleChange}/>
+                    <input autoComplete="false" type="text" className="input" name="email" value={inputs.email} onChange={handleChange}/>
+                </div>
+            </div>
+            <div className="input-div one">
+                <div className="i">
+                    <i className="fa-regular fa-phone"></i>
+                </div>
+                <div className="div">
+                    <h5>Phone</h5>
+                    <input autoComplete="false" type="text" className="input" name="phone" value={inputs.phone} onChange={handleChange}/>
                 </div>
             </div>
             <div className="input-div pass">
@@ -69,7 +105,7 @@ function Login(props)
                 </div>
                 <div className="div">
                     <h5>Password</h5>
-                    <input autoComplete="true" type="password" className="input" name="password" value={inputs.password || ""} onChange={handleChange}/>
+                    <input autoComplete="true" type="password" className="input" name="password" value={inputs.password} onChange={handleChange}/>
                 </div>
             </div>
             <div className="input-div pass">
@@ -78,13 +114,13 @@ function Login(props)
                 </div>
                 <div className="div">
                     <h5>Re-Enter Password</h5>
-                    <input autoComplete="false" type="password" className="input" name="confirmPassword" value={inputs.confirmPassword || ""} onChange={handleChange}/>
+                    <input autoComplete="false" type="password" className="input" name="confirmPassword" value={inputs.confirmPassword} onChange={handleChange}/>
                 </div>
             </div>
             <Link to={"/login"}>Already have an account?</Link>
             <a href="#" onClick={() => props.onFormSwitch("login")}>Sign in</a>
             <input type="submit" className="btn" value="Sign up"/>
-            <p className="messages"></p>
+            <p className="messages">{error}</p>
         </form>
     );
 }
