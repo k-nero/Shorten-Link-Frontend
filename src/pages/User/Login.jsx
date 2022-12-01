@@ -32,7 +32,6 @@ function Login(props)
                 setLoading(false);
                 if(res.status === "success")
                 {
-                    sessionStorage.setItem("token", res.data.token);
                     props.setToken(res.data.token);
                 }
                 else

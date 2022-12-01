@@ -1,7 +1,7 @@
 import './Home.css';
 import {useState} from "react";
 
-function Home()
+function Home(props)
 {
     const [error, setError] = useState("");
     const [linkId, setLinkId] = useState("");
@@ -21,7 +21,8 @@ function Home()
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'Authorization': 'Bearer ' + props.getToken()
                 },
                 body: JSON.stringify(inputs)
             }).then(res => res.json()).then(res => {
@@ -61,7 +62,7 @@ function Home()
             <div className="payment">
                 <div className="">
                     <div className="form__detail">
-                        <input className="Link" id="shotenLink" type="text" placeholder="" value={linkId}/>
+                        <input className="Link" id="shotenLink" type="text" placeholder="" value={linkId} readOnly={true}/>
                         <button className="btn btn--primary" onClick={() => navigator.clipboard.writeText(linkId)}>Copy</button>
                     </div>
                 </div>

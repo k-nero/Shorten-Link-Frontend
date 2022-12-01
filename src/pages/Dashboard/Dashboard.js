@@ -28,11 +28,11 @@ function Form(props)
 }
 function Dashboard(props)
 {
-    const[token, setToken] = useState();
+    let token = props.getToken();
     if(!token)
     {
         return (
-            <Form setToken={setToken} state={'login'}/>
+            <Form setToken={props.setToken}   state={'login'}/>
         );
     }
     return(
