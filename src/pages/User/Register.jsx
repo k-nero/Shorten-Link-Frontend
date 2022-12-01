@@ -1,29 +1,24 @@
 import "./style.css";
 import {useEffect, useState} from "react";
 import effect from "./effect";
-import {Link} from "react-router-dom";
-import {useNavigate} from "react-router-dom";
+import { Link} from "react-router-dom";
 
-function Login(props)
+function Register(props)
 {
-    let navigate = useNavigate();
-
-    useEffect(() => {
-        effect();
-    }, []);
+    useEffect(() => effect());
 
     const [inputs, setInputs] = useState({
-        confirmPassword: null,
-        email: null,
-        password: null,
-        username: null,
-        phone: null
+        confirmPassword: undefined,
+        email: undefined,
+        password: undefined,
+        username: undefined,
+        phone: undefined
     });
     const[loading, setLoading] = useState(false);
     const[error, setError] = useState(null);
 
-    const handleSubmit = () => {
-
+    const handleSubmit = (event) => {
+        event.preventDefault();
         if (inputs.confirmPassword === inputs.password)
         {
             async function handleFetch()
@@ -32,14 +27,16 @@ function Login(props)
                 await fetch('http://localhost:5000/api/users/register', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify(inputs)
                 }).then(res => res.json()).then(data => {
                     setLoading(false);
                     if(data.status === "success")
                     {
-                        return navigate('/user', {replace: true});
+                        props.setMessage("You have successfully registered. Please login to continue.");
+                        props.onFormSwitch("login");
                     }
                     else
                     {
@@ -117,12 +114,11 @@ function Login(props)
                     <input autoComplete="false" type="password" className="input" name="confirmPassword" value={inputs.confirmPassword} onChange={handleChange}/>
                 </div>
             </div>
-            <Link to={"/login"}>Already have an account?</Link>
-            <a href="#" onClick={() => props.onFormSwitch("login")}>Sign in</a>
+            <Link onClick={() => props.onFormSwitch("login")} to={''}>Already have an account?Sign in</Link>
             <input type="submit" className="btn" value="Sign up"/>
             <p className="messages">{error}</p>
         </form>
     );
 }
 
-export default Login;
+export default Register;

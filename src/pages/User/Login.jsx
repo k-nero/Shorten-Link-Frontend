@@ -2,18 +2,16 @@ import "./style.css";
 import {useEffect, useState} from "react";
 import effect from "./effect";
 import {Link} from "react-router-dom";
-import {useNavigate} from "react-router-dom";
-function Login(props) {
-    let navigate = useNavigate();
 
-    useEffect(() => {
-        effect();
-    }, []);
+function Login(props)
+{
+    useEffect(() => effect());
 
     const[inputs, setInputs] = useState({
-        username: null,
-        password: null
+        username: undefined,
+        password: undefined
     });
+
     const[loading, setLoading] = useState(false);
     const[errors, setErrors] = useState(null);
 
@@ -25,19 +23,21 @@ function Login(props) {
             let res = await fetch('http://localhost:5000/api/users/login', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify(inputs)
             });
-            await res.json().then(data => {
+            await res.json().then(res => {
                 setLoading(false);
-                if(data.status === "success")
+                if(res.status === "success")
                 {
-                    navigate('/', {replace: true});
+                    localStorage.setItem("token", res.data.token);
+                    props.setToken(res.data.token);
                 }
                 else
                 {
-                    setErrors(data.message);
+                    setErrors(res.message);
                 }
             });
         }
@@ -60,6 +60,7 @@ function Login(props) {
         <form onSubmit={handleSubmit}>
             <embed type="" src="/images/kylin.svg"/>
             <h2 className="title">Welcome</h2>
+            <p className="messages">{props.message}</p>
             <div className="input-div one">
                 <div className="i">
                     <i className="fas fa-user"></i>
@@ -79,7 +80,7 @@ function Login(props) {
                 </div>
             </div>
             <Link to="">Forgot password</Link>
-            <a href="#" onClick={() => props.onFormSwitch("Register")}>Sign up</a>
+            <Link to={''} onClick={() => props.onFormSwitch("Register")}>Sign up</Link>
             <input type="submit" className="btn" value="Login"/>
             <p className="messages">{errors}</p>
         </form>
