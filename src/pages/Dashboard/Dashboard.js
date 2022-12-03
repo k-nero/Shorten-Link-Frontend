@@ -1,6 +1,7 @@
 import Login from "../User/Login";
 import Register from "../User/Register";
 import {useState} from "react";
+import useToken from "../../hook/useToken";
 
 function Form(props)
 {
@@ -26,13 +27,13 @@ function Form(props)
         </div>
     )
 }
-function Dashboard(props)
+function Dashboard()
 {
-    let token = props.getToken();
+    const {token, setToken} = useToken();
     if(!token)
     {
         return (
-            <Form setToken={props.setToken}   state={'login'}/>
+            <Form setToken={setToken}/>
         );
     }
     return(

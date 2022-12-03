@@ -1,8 +1,10 @@
 import './Home.css';
 import {useState} from "react";
+import useToken from "../../hook/useToken";
 
 function Home(props)
 {
+    const {token} = useToken();
     const [error, setError] = useState("");
     const [linkId, setLinkId] = useState("");
     const [loading, setLoading] = useState(false);
@@ -16,26 +18,26 @@ function Home(props)
         event.preventDefault();
         async function handleFetch()
         {
-            setLoading(true);
-            fetch('http://localhost:5000/api/shortener/short', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Authorization': 'Bearer ' + props.getToken()
-                },
-                body: JSON.stringify(inputs)
-            }).then(res => res.json()).then(res => {
-                setLoading(false);
-                if(res.status === "success")
-                {
-                    setLinkId("http://localhost:5000/" + res.data.urlId);
-                }
-                else
-                {
-                    setError(res.message);
-                }
-            });
+                setLoading(true);
+                fetch('http://localhost:5000/api/shortener/short', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(inputs)
+                }).then(res => res.json()).then(res => {
+                    setLoading(false);
+                    if(res.status === "success")
+                    {
+                        setLinkId("http://localhost:5000/" + res.data.urlId);
+                    }
+                    else
+                    {
+                        setError(res.message);
+                    }
+                });
         }
         handleFetch().then(() => {});
     }
@@ -71,15 +73,16 @@ function Home(props)
                     <div className="form__name form__detail">
                         <label htmlFor="name">Original link</label>
                         <ion-icon name="person-outline"></ion-icon>
-                        <input type="text" placeholder="https://www.google.com" name="originalUrl" value={inputs.originalUrl} onChange={handleChange}/>
+                        <textarea className="Link" placeholder="https://www.google.com" name="originalUrl" value={inputs.originalUrl} onChange={handleChange}/>
                         {alerts ? alerts : ""}
                     </div>
                     <div className="form__number form__detail">
                         <label htmlFor="text">Description(Optional)</label>
                         <ion-icon name="card-outline"></ion-icon>
-                        <input type="text" placeholder="Google search" name="description" value={inputs.description} onChange={handleChange}/>
+                        <textarea className="Link" placeholder="Google search" name="description" value={inputs.description} onChange={handleChange}/>
                     </div>
-                    <button type="submit" className="btn btn--primary" id="generateBut">{loading ? "Generating" : "Generate"}</button>
+                    <button type="submit" className="btn btn--primary" id="generateBut">{loading ?  <div className="load"></div> : "Generate"}
+                       </button>
                 </form>
                 <div className="payment__shadow-dots"></div>
                 <div className="payment__dots">

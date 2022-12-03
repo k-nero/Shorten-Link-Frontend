@@ -8,11 +8,11 @@ function Register(props)
     useEffect(() => effect());
 
     const [inputs, setInputs] = useState({
-        confirmPassword: undefined,
-        email: undefined,
-        password: undefined,
-        username: undefined,
-        phone: undefined
+        confirmPassword: '',
+        email: '',
+        password: '',
+        username: '',
+        phone: ''
     });
     const[loading, setLoading] = useState(false);
     const[error, setError] = useState(null);
@@ -59,10 +59,9 @@ function Register(props)
         setInputs(values => ({...values, [name]: value}))
     }
 
-
-    if (loading)
+    if(loading)
     {
-        return <div>Loading...</div>
+        return  <div ><div className="load"></div> Loading </div>;
     }
 
     return (

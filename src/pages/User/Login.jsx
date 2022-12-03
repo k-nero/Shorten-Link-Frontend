@@ -8,8 +8,8 @@ function Login(props)
     useEffect(() => effect());
 
     const[inputs, setInputs] = useState({
-        username: undefined,
-        password: undefined
+        username: '',
+        password: ''
     });
 
     const[loading, setLoading] = useState(false);
@@ -34,7 +34,7 @@ function Login(props)
                 {
                     props.setToken(res.data.token);
                 }
-                else
+                else if(res.status === "error")
                 {
                     setErrors(res.message);
                 }
@@ -52,7 +52,7 @@ function Login(props)
 
     if(loading)
     {
-        return <div>Loading...</div>
+        return  <div ><div className="load"></div> Loading </div>;
     }
 
     return (
