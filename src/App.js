@@ -2,7 +2,6 @@ import {Route, Routes} from "react-router-dom";
 import Home from "./pages/Home/Home";
 import React from "react";
 import Dashboard from "./pages/Dashboard/Dashboard";
-import useToken from "./hook/useToken";
 
 function App()
 {

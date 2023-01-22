@@ -79,7 +79,7 @@ function Register(props)
             </div>
             <div className="input-div one">
                 <div className="i">
-                    <i className="fa-regular fa-envelope"></i>
+                    <i className="fa-solid fa-envelope"></i>
                 </div>
                 <div className="div">
                     <h5>Email</h5>
@@ -88,7 +88,7 @@ function Register(props)
             </div>
             <div className="input-div one">
                 <div className="i">
-                    <i className="fa-regular fa-phone"></i>
+                    <i className="fa-solid fa-phone"></i>
                 </div>
                 <div className="div">
                     <h5>Phone</h5>

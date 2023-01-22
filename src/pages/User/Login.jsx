@@ -20,7 +20,7 @@ function Login(props)
         async function handleFetch()
         {
             setLoading(true);
-            let res = await fetch('http://localhost:5000/api/users/login', {
+            let res = await fetch("http://localhost:5000/api/users/login", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -32,7 +32,7 @@ function Login(props)
                 setLoading(false);
                 if(res.status === "success")
                 {
-                    props.setToken(res.data.token);
+                    props.setToken(res.data);
                 }
                 else if(res.status === "error")
                 {
@@ -40,8 +40,7 @@ function Login(props)
                 }
             });
         }
-        handleFetch().then(() => {
-        });
+        handleFetch().then(() => {});
     }
 
     const handleChange = (event) => {
