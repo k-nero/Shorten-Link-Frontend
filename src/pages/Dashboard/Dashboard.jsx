@@ -3,12 +3,13 @@ import Register from "../User/Register";
 import {useEffect, useState} from "react";
 import useToken from "../../hook/useToken";
 import NavBar from "../../components/NavBar";
-import {Button, Input, Table, Tooltip, Space, Popconfirm, message} from "antd";
+import {Button, Input, Table, Tooltip, Space, Popconfirm, message, Modal, Form, Empty} from "antd";
 import {CopyOutlined, DeleteOutlined, EditOutlined} from '@ant-design/icons';
 import { Typography } from 'antd';
+import toCapitalizeFirstLetter from "../../Util/capitalizeFirstLetter";
 const { Title } = Typography;
 
-function Form(props)
+function UserForm(props)
 {
     const [currentForm, setCurrentForm] = useState('login');
     const [message, setMessage] = useState('');
@@ -59,7 +60,7 @@ async function deleteLink(token, urlId)
     return res.json()
 }
 
-async function updateLink(token, urlId, description)
+async function updateLink(token, urlId, description, originalUrl)
 {
     let res = await fetch("http://localhost:5000/api/shortener/updateLink",{
             method:"POST",
@@ -68,7 +69,7 @@ async function updateLink(token, urlId, description)
                 'Accept': 'application/json',
                 'Authorization': 'Bearer ' + token
             },
-            body: JSON.stringify({urlId: urlId, description: description})
+            body: JSON.stringify({urlId: urlId, description: description, originalUrl: originalUrl})
         })
     return res.json()
 }
@@ -78,6 +79,12 @@ function Dashboard()
     const [data, setData] = useState();
     const [time, setTime] = useState("");
     const [messageApi, contextHolder] = message.useMessage();
+    const [isVisible, setIsVisible] = useState(false);
+    const [inputValue, setInputValue] = useState({
+        newName: "",
+        newDesUrl: ""
+    });
+    const [record, setRecord] = useState();
 
     useEffect(() => {
         const data = [
@@ -95,9 +102,49 @@ function Dashboard()
         }
     }, [])
 
-    function handleUpdate()
+    function onEditingRecord(record)
     {
+        setIsVisible(true);
+        setRecord({...record});
+    }
 
+    const handleChange = (event) => {
+        const name = event.target.name;
+        const value = event.target.value;
+        setInputValue(values => ({...values, [name]: value}));
+    }
+
+    function handleUpdate(record)
+    {
+        updateLink(token, record.urlId, inputValue.newName, inputValue.newDesUrl).then(res => {
+            if(res.status === "success")
+            {
+                getData(token).then(res => {
+                    if(res.status === "success")
+                    {
+                        setData(res.data.links);
+                        messageApi.open({
+                            type: 'success',
+                            content: 'Updated successfully',
+                        }).then();
+                    }
+                    else
+                    {
+                        messageApi.open({
+                            type: 'warning',
+                            content: 'Warning, Something went wrong',
+                        }).then();
+                    }
+                });
+            }
+            else
+            {
+                messageApi.open({
+                    type: 'error',
+                    content: 'Error cannot update',
+                }).then();
+            }
+        });
     }
 
     function handleDelete(record)
@@ -135,7 +182,7 @@ function Dashboard()
                     {
                         messageApi.open({
                             type: 'warning',
-                            content: 'Error cannot refresh data',
+                            content: 'Warning, Something went wrong',
                         }).then();
                     }
                 });
@@ -151,10 +198,14 @@ function Dashboard()
     }
 
     useEffect(() => {
+        if(token === null)
+        {
+            return;
+        }
         getData(token).then(res => {
             setData(res.data.links);
         });
-    }, []);
+    }, [token])
     const columns = [
         {
             title: 'Name',
@@ -176,13 +227,7 @@ function Dashboard()
             render: (text) => {
                 return (
                     <Space.Compact block>
-                        <Input
-                            disabled
-                            style={{
-                                width: 'calc(100% - 200px)',
-                            }}
-                            defaultValue={text}
-                        />
+                        <Input disabled style={{width: 'calc(100% - 200px)',}} defaultValue={text}/>
                         <Tooltip title="Copy original url">
                             <Button icon={<CopyOutlined onClick={() => navigator.clipboard.writeText(text)} />} />
                         </Tooltip>
@@ -197,13 +242,7 @@ function Dashboard()
             render: (text) => {
                 return(
                     <Space.Compact block>
-                        <Input
-                            disabled
-                            style={{
-                                width: 'calc(100% - 200px)',
-                            }}
-                            defaultValue={text}
-                        />
+                        <Input disabled style={{width: 'calc(100% - 200px)',}} defaultValue={text}/>
                         <Tooltip title="Copy shorten url">
                             <Button icon={<CopyOutlined onClick={() => navigator.clipboard.writeText(text)} />} />
                         </Tooltip>
@@ -223,7 +262,7 @@ function Dashboard()
                 return(
                     <Space size="middle">
                         <Tooltip title="Edit record">
-                            <Button icon={<EditOutlined />} />
+                            <Button onClick={() => onEditingRecord(record)} icon={<EditOutlined />} />
                         </Tooltip>
                         {/*<Tooltip title="Delete record">*/}
                         {/*    <Button style={{color:"red"}} icon={<DeleteOutlined/>} onClick={() => handleDelete(record)}/>*/}
@@ -238,20 +277,28 @@ function Dashboard()
             }
         },
     ]
-    if(!token)
-    {
-        return (
-            <Form setToken={setToken}/>
-        );
-    }
+    let table = (<div style={{maxWidth:"80%", margin:"auto", marginTop:"32px"}}>
+                    <Title>{time}, {toCapitalizeFirstLetter(localStorage.getItem("userInfo"))}</Title>
+                    <Table rowKey="urlId" style={{ }} columns={columns} dataSource={data}/>
+                  </div>);
+
+    let loginForm = (<UserForm setToken={setToken}/>);
+
     return(
         <div>
             {contextHolder}
             <NavBar selectedKeys={["dashboard"]}/>
-            <div style={{maxWidth:"80%", margin:"auto", marginTop:"32px"}}>
-                <Title>{time}, Admin</Title>
-                <Table rowKey="urlId" style={{ }} columns={columns} dataSource={data}/>
-            </div>
+            {token ? table : loginForm}
+            <Modal title="Edit record" open={isVisible} okText="Save" onCancel={() => setIsVisible(false)} onOk={() => {setIsVisible(false); handleUpdate(record)}}>
+                <Form style={{width:"100%"}}>
+                    <Form.Item>
+                        <Input placeholder="Name" key={record?.description} defaultValue={record?.description} name="newName" onChange={handleChange}/>
+                    </Form.Item>
+                    <Form.Item>
+                        <Input placeholder="Original Url" key={record?.originalUrl} defaultValue={record?.originalUrl} name="newDesUrl" onChange={handleChange}/>
+                    </Form.Item>
+                </Form>
+            </Modal>
         </div>
     )
 }

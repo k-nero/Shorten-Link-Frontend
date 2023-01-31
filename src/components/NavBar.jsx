@@ -20,6 +20,10 @@ function NavBar(props)
     const [userInfo, setUserInfo] = useState({});
     const {token} = useToken();
     useEffect(() => {
+        if(!token)
+        {
+            return;
+        }
         fetchUserInfo(token).then(res => {
             if(res.error)
             {
@@ -27,8 +31,12 @@ function NavBar(props)
                 window.location.reload();
             }
             setUserInfo(res.data.username.charAt(0).toUpperCase());
-        });
-    }, [])
+        }).then((res) => {
+            if(localStorage.getItem("userInfo") !== res.data.username)
+            {
+                localStorage.setItem("userInfo", res.data.username);
+            }})
+    }, [token])
 
     function handleClick(e)
     {
