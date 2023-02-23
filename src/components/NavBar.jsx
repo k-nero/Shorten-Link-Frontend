@@ -38,7 +38,7 @@ function NavBar(props)
             }})
     }, [token])
 
-    function handleClick(e)
+    function handleClick()
     {
         localStorage.removeItem("token");
         window.location.reload();
