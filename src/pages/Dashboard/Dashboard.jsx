@@ -1,12 +1,14 @@
 import Login from "../User/Login";
 import Register from "../User/Register";
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import useToken from "../../hook/useToken";
 import NavBar from "../../components/NavBar";
-import {Button, Input, Table, Tooltip, Space, Popconfirm, message, Modal, Form, Empty} from "antd";
-import {CopyOutlined, DeleteOutlined, EditOutlined} from '@ant-design/icons';
+import {Button, Input, Table, Tooltip, Space, Popconfirm, message, Modal, Form} from "antd";
+import {CopyOutlined, DeleteOutlined, EditOutlined, SearchOutlined} from '@ant-design/icons';
 import { Typography } from 'antd';
+import Highlighter from 'react-highlight-words';
 import toCapitalizeFirstLetter from "../../Util/capitalizeFirstLetter";
+import Loading from "../../components/Loading";
 const { Title } = Typography;
 
 function UserForm(props)
@@ -34,35 +36,56 @@ function UserForm(props)
     )
 }
 
-async function getData(token)
+function Dashboard()
 {
-    let res = await fetch("http://localhost:5000/api/users/getLinks",{
-        method:"GET",
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + token
-        }})
-    return res.json()
-}
+    const {token, setToken} = useToken();
+    const [data, setData] = useState();
+    const [time, setTime] = useState("");
+    const [messageApi, contextHolder] = message.useMessage();
+    const [isVisible, setIsVisible] = useState(false);
+    const [isGetDataLoading, setIsGetDataLoading] = useState(false);
+    const [isDeleteLoading, setIsDeleteLoading] = useState(false);
+    const [isUpdateLoading, setIsUpdateLoading] = useState(false);
+    const [inputValue, setInputValue] = useState({
+        newName: "",
+        newDesUrl: ""
+    });
+    const [record, setRecord] = useState();
 
-async function deleteLink(token, urlId)
-{
-    let res = await fetch("http://localhost:5000/api/shortener/deleteLink",{
-        method:"POST",
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + token
-        },
-        body: JSON.stringify({urlId: urlId})
-    })
-    return res.json()
-}
+    async function getData(token)
+    {
+        setIsGetDataLoading(true);
+        let res = await fetch("http://localhost:5000/api/users/getLinks",{
+            method:"GET",
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + token
+            }})
+        setIsGetDataLoading(false);
+        return res.json()
+    }
 
-async function updateLink(token, urlId, description, originalUrl)
-{
-    let res = await fetch("http://localhost:5000/api/shortener/updateLink",{
+    async function deleteLink(token, urlId)
+    {
+        setIsDeleteLoading(true);
+        let res = await fetch("http://localhost:5000/api/shortener/deleteLink",{
+            method:"POST",
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({urlId: urlId})
+        })
+        setIsDeleteLoading(false);
+        return res.json()
+    }
+
+    async function updateLink(token, urlId, description, originalUrl)
+    {
+        setIsUpdateLoading(true);
+        let res = await fetch("http://localhost:5000/api/shortener/updateLink",{
             method:"POST",
             headers: {
                 'Content-Type': 'application/json',
@@ -71,20 +94,9 @@ async function updateLink(token, urlId, description, originalUrl)
             },
             body: JSON.stringify({urlId: urlId, description: description, originalUrl: originalUrl})
         })
-    return res.json()
-}
-function Dashboard()
-{
-    const {token, setToken} = useToken();
-    const [data, setData] = useState();
-    const [time, setTime] = useState("");
-    const [messageApi, contextHolder] = message.useMessage();
-    const [isVisible, setIsVisible] = useState(false);
-    const [inputValue, setInputValue] = useState({
-        newName: "",
-        newDesUrl: ""
-    });
-    const [record, setRecord] = useState();
+        setIsUpdateLoading(false);
+        return res.json()
+    }
 
     useEffect(() => {
         const data = [
@@ -206,6 +218,109 @@ function Dashboard()
             setData(res.data.links);
         });
     }, [token])
+
+    const [searchText, setSearchText] = useState('');
+    const [searchedColumn, setSearchedColumn] = useState('');
+    const searchInput = useRef(null);
+    function handleSearch(selectedKeys, confirm, dataIndex) {
+        confirm();
+        setSearchText(selectedKeys[0]);
+        setSearchedColumn(dataIndex);
+    };
+    function handleReset(clearFilters){
+        clearFilters();
+        setSearchText('');
+    };
+    const getColumnSearchProps = (dataIndex) => ({
+        filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
+            <div style={{padding: 8,}} onKeyDown={(e) => e.stopPropagation()}>
+                <Input
+                    ref={searchInput}
+                    placeholder={`Search ${dataIndex}`}
+                    value={selectedKeys[0]}
+                    onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+                    onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                    style={{
+                        marginBottom: 8,
+                        display: 'block',
+                    }}
+                />
+                <Space>
+                    <Button
+                        type="primary"
+                        onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                        icon={<SearchOutlined />}
+                        size="small"
+                        style={{
+                            width: 90,
+                        }}
+                    >
+                        Search
+                    </Button>
+                    <Button
+                        onClick={() => clearFilters && handleReset(clearFilters)}
+                        size="small"
+                        style={{
+                            width: 90,
+                        }}
+                    >
+                        Reset
+                    </Button>
+                    <Button
+                        type="link"
+                        size="small"
+                        onClick={() => {
+                            confirm({
+                                closeDropdown: false,
+                            });
+                            setSearchText(selectedKeys[0]);
+                            setSearchedColumn(dataIndex);
+                        }}
+                    >
+                        Filter
+                    </Button>
+                    <Button
+                        type="link"
+                        size="small"
+                        onClick={() => {
+                            close();
+                        }}
+                    >
+                        close
+                    </Button>
+                </Space>
+            </div>
+        ),
+        filterIcon: (filtered) => (
+            <SearchOutlined
+                style={{
+                    color: filtered ? '#1890ff' : undefined,
+                }}
+            />
+        ),
+        onFilter: (value, record) =>
+            record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+        onFilterDropdownOpenChange: (visible) => {
+            if (visible) {
+                setTimeout(() => searchInput.current?.select(), 100);
+            }
+        },
+        render: (text) =>
+            searchedColumn === dataIndex ? (
+                <Highlighter
+                    highlightStyle={{
+                        backgroundColor: '#ffc069',
+                        padding: 0,
+                    }}
+                    searchWords={[searchText]}
+                    autoEscape
+                    textToHighlight={text ? text.toString() : ''}
+                />
+            ) : (
+                text
+            ),
+    });
+
     const columns = [
         {
             title: 'Name',
@@ -219,6 +334,7 @@ function Dashboard()
             //         </Space.Compact>
             //     )
             // }
+            ...getColumnSearchProps('description'),
         },
         {
             title: 'Original Url',
@@ -262,14 +378,14 @@ function Dashboard()
                 return(
                     <Space size="middle">
                         <Tooltip title="Edit record">
-                            <Button onClick={() => onEditingRecord(record)} icon={<EditOutlined />} />
+                            {isUpdateLoading ? <Loading/> : <Button onClick={() => onEditingRecord(record)} icon={<EditOutlined />} />}
                         </Tooltip>
                         {/*<Tooltip title="Delete record">*/}
                         {/*    <Button style={{color:"red"}} icon={<DeleteOutlined/>} onClick={() => handleDelete(record)}/>*/}
                         {/*</Tooltip>*/}
                         <Popconfirm title={`Are you sure you want to delete ${record.description}?`} onConfirm={() => handleDelete(record)} okText="Yes" cancelText="No">
                             <Tooltip title="Delete record" placement="bottom">
-                                <Button style={{color:"red"}} icon={<DeleteOutlined/>}/>
+                                {isDeleteLoading ? <Loading/> : <Button style={{color:"red"}} icon={<DeleteOutlined/>}/>}
                             </Tooltip>
                         </Popconfirm>
                     </Space>
@@ -277,9 +393,9 @@ function Dashboard()
             }
         },
     ]
-    let table = (<div style={{maxWidth:"80%", margin:"auto", marginTop:"32px"}}>
+    let table =  (<div style={{maxWidth:"80%", margin:"auto", marginTop:"32px"}}>
                     <Title>{time}, {toCapitalizeFirstLetter(localStorage.getItem("userInfo"))}</Title>
-                    <Table rowKey="urlId" style={{ }} columns={columns} dataSource={data}/>
+                {isGetDataLoading ? <Loading/> : <Table rowKey="urlId" style={{ }} columns={columns} dataSource={data}/>}
                   </div>);
 
     let loginForm = (<UserForm setToken={setToken}/>);

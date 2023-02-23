@@ -254,21 +254,6 @@ html
     grid-column: 1 / 3;
 }
 
-.alert
-{
-    font-family: "Inter", sans-serif;
-    font-size: 1.2rem;
-    color: var(--alert);
-    margin-top: 0.6rem;
-    display: flex;
-    align-items: center;
-}
-
-.alert svg
-{
-    margin-right: 0.4rem;
-}
-
 .dribbble
 {
     position: fixed;
