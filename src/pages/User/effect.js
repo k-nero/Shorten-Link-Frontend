@@ -1,26 +1,31 @@
 function effect()
 {
-    const inputs = document.querySelectorAll(".input");
+	const inputs = document.querySelectorAll(".input");
 
-    function addcl(){
-        let parent = this.parentNode.parentNode;
-        parent.classList.add("focus");
-    }
+	function addcl()
+	{
+		let parent = this.parentNode.parentNode;
+		parent.classList.add("focus");
+	}
 
-    function remcl(){
-        let parent = this.parentNode.parentNode;
-        if(this.value === ""){
-            parent.classList.remove("focus");
-        }
-    }
+	function remcl()
+	{
+		let parent = this.parentNode.parentNode;
+		if(this.value === "")
+		{
+			parent.classList.remove("focus");
+		}
+	}
 
-    inputs.forEach(input => {
-        if(input.value !== ""){
-            input.parentNode.parentNode.classList.add("focus");
-        }
-        input.addEventListener("focus", addcl);
-        input.addEventListener("blur", remcl);
-    });
+	inputs.forEach((input) =>
+	{
+		if(input.value !== "")
+		{
+			input.parentNode.parentNode.classList.add("focus");
+		}
+		input.addEventListener("focus", addcl);
+		input.addEventListener("blur", remcl);
+	});
 }
 
 export default effect;
